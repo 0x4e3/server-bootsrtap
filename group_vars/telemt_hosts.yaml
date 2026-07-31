@@ -1,0 +1,3 @@
+---
+telemt_sni_hostname: ""
+telemt_config: "{{ vault_telemt_config }}"

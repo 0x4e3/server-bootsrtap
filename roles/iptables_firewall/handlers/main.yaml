@@ -1,0 +1,5 @@
+---
+- name: Reload iptables rules
+  ansible.builtin.command: netfilter-persistent reload
+  changed_when: false
+  listen: reload iptables rules

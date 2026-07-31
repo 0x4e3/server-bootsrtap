@@ -1,0 +1,4 @@
+---
+iptables_open_tcp_ports:
+  - "{{ ssh_hardening_port | default(22571) }}"
+iptables_open_udp_ports: []

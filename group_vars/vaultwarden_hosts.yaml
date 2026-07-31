@@ -1,0 +1,3 @@
+---
+vaultwarden_domain: ""
+vaultwarden_admin_token: "{{ vault_vaultwarden_admin_token }}"

@@ -1,0 +1,6 @@
+---
+three_x_ui_image: ghcr.io/mhsanaei/3x-ui:latest
+three_x_ui_container_name: 3x-ui
+three_x_ui_root_dir: /opt/3x-ui
+three_x_ui_panel_domain: ""
+three_x_ui_inbounds: []

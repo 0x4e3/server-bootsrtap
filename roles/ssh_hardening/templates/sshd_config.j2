@@ -1,0 +1,51 @@
+# Managed by Ansible
+
+Port {{ ssh_hardening_port }}
+Protocol 2
+PermitRootLogin {{ ssh_hardening_permit_root_login }}
+PasswordAuthentication {{ ssh_hardening_password_authentication }}
+KbdInteractiveAuthentication {{ ssh_hardening_kbd_interactive_authentication }}
+ChallengeResponseAuthentication {{ ssh_hardening_challenge_response_authentication }}
+PubkeyAuthentication {{ ssh_hardening_pubkey_authentication }}
+UsePAM {{ ssh_hardening_use_pam }}
+PermitEmptyPasswords {{ ssh_hardening_permit_empty_passwords }}
+LoginGraceTime {{ ssh_hardening_login_grace_time }}
+MaxAuthTries {{ ssh_hardening_max_auth_tries }}
+MaxSessions {{ ssh_hardening_max_sessions }}
+MaxStartups {{ ssh_hardening_max_startups }}
+ClientAliveInterval {{ ssh_hardening_client_alive_interval }}
+ClientAliveCountMax {{ ssh_hardening_client_alive_count_max }}
+X11Forwarding {{ ssh_hardening_x11_forwarding }}
+AllowAgentForwarding {{ ssh_hardening_allow_agent_forwarding }}
+AllowTcpForwarding {{ ssh_hardening_allow_tcp_forwarding }}
+StrictModes {{ ssh_hardening_strict_modes }}
+IgnoreRhosts {{ ssh_hardening_ignore_rhosts }}
+HostbasedAuthentication {{ ssh_hardening_hostbased_authentication }}
+PermitUserEnvironment {{ ssh_hardening_permit_user_environment }}
+Compression {{ ssh_hardening_compression }}
+PrintMotd {{ ssh_hardening_print_motd }}
+PrintLastLog {{ ssh_hardening_print_lastlog }}
+TCPKeepAlive {{ ssh_hardening_tcp_keep_alive }}
+Ciphers {{ ssh_hardening_ciphers | join(',') }}
+MACs {{ ssh_hardening_macs | join(',') }}
+KexAlgorithms {{ ssh_hardening_kex_algorithms | join(',') }}
+HostKeyAlgorithms {{ ssh_hardening_hostkey_algorithms | join(',') }}
+
+{% if ssh_hardening_allow_users | length > 0 %}
+AllowUsers {{ ssh_hardening_allow_users | join(' ') }}
+{% endif %}
+{% if ssh_hardening_allow_groups | length > 0 %}
+AllowGroups {{ ssh_hardening_allow_groups | join(' ') }}
+{% endif %}
+{% if ssh_hardening_deny_users | length > 0 %}
+DenyUsers {{ ssh_hardening_deny_users | join(' ') }}
+{% endif %}
+{% if ssh_hardening_deny_groups | length > 0 %}
+DenyGroups {{ ssh_hardening_deny_groups | join(' ') }}
+{% endif %}
+
+{% for key, value in ssh_hardening_extra_options.items() %}
+{{ key }} {{ value }}
+{% endfor %}
+
+Subsystem sftp /usr/lib/openssh/sftp-server

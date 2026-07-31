@@ -1,0 +1,53 @@
+---
+- name: Create bootstrap login user
+  hosts: bootstrap
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yaml
+    - ../group_vars/vault.yaml
+
+  roles:
+    - role: users
+      bootstrap_users:
+        - name: "{{ bootstrap_login_user_name }}"
+          shell: "{{ bootstrap_users_default_shell }}"
+          groups: "{{ bootstrap_login_user_groups }}"
+          ssh_public_keys: "{{ bootstrap_login_user_ssh_public_keys }}"
+          sudo_nopasswd: "{{ bootstrap_login_user_sudo_nopasswd }}"
+          force_password_change: "{{ bootstrap_login_user_force_password_change }}"
+          create_home: true
+          state: present
+
+- name: Bootstrap Ubuntu servers as bootstrap login user
+  hosts: bootstrap
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yaml
+    - ../group_vars/vault.yaml
+  vars:
+    ansible_user: "{{ bootstrap_login_user_name }}"
+
+  pre_tasks:
+    - name: Reset connection before using bootstrap login user
+      ansible.builtin.meta: reset_connection
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: bootstrap_manage_updates | bool
+
+    - name: Upgrade all packages to latest available versions
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: true
+        autoclean: true
+      when: bootstrap_manage_updates | bool
+
+    - name: Reboot after system upgrade
+      ansible.builtin.reboot:
+        reboot_timeout: "{{ bootstrap_reboot_timeout }}"
+        test_command: whoami
+      when: bootstrap_manage_updates | bool

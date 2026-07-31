@@ -1,0 +1,15 @@
+---
+extends: default
+
+ignore: |
+  .venv/
+  group_vars/vault.yaml
+  group_vars/vault.yml
+
+rules:
+  line-length: disable
+  truthy:
+    allowed-values:
+      - "true"
+      - "false"
+    check-keys: false

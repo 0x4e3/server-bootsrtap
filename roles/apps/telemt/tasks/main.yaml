@@ -1,0 +1,45 @@
+---
+- name: Validate Telemt configuration
+  ansible.builtin.assert:
+    that:
+      - "'traefik_hosts' in group_names"
+      - "'telemt_hosts' in group_names"
+      - telemt_config | length > 0
+      - telemt_sni_hostname | length > 0
+      - telemt_listen_port | string is match('^[0-9]+$')
+      - telemt_listen_port | int >= 1
+      - telemt_listen_port | int <= 65535
+    fail_msg: "Telemt requires traefik_hosts, telemt_hosts, telemt_config, telemt_sni_hostname, and a valid telemt_listen_port."
+
+- name: Ensure Telemt configuration directory exists
+  ansible.builtin.file:
+    path: "{{ telemt_root_dir }}/config"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Configure Telemt
+  ansible.builtin.copy:
+    dest: "{{ telemt_root_dir }}/config/telemt.toml"
+    content: "{{ telemt_config }}\n"
+    owner: root
+    group: root
+    mode: "0600"
+  register: telemt_config_file
+
+- name: Configure Telemt Docker Compose project
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ telemt_root_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+  register: telemt_compose_file
+
+- name: Ensure Telemt is running
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f {{ telemt_root_dir }}/compose.yaml up --detach
+      {{ '--force-recreate' if telemt_config_file.changed or telemt_compose_file.changed else '' }}
+  changed_when: false

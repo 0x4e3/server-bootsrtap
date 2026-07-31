@@ -1,0 +1,29 @@
+services:
+  3x-ui:
+    image: {{ three_x_ui_image }}
+    container_name: {{ three_x_ui_container_name }}
+    restart: unless-stopped
+    environment:
+      XUI_ENABLE_FAIL2BAN: "false"
+    volumes:
+      - "{{ three_x_ui_root_dir }}/data:/etc/x-ui"
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.3x-ui.rule=Host(`{{ three_x_ui_panel_domain }}`)"
+      - "traefik.http.routers.3x-ui.entrypoints=websecure"
+      - "traefik.http.routers.3x-ui.tls.certresolver=letsencrypt"
+      - "traefik.http.services.3x-ui.loadbalancer.server.port=2053"
+{% for inbound in three_x_ui_inbounds %}
+      - "traefik.tcp.routers.3x-ui-{{ loop.index }}.rule=HostSNI(`{{ inbound.hostname }}`)"
+      - "traefik.tcp.routers.3x-ui-{{ loop.index }}.entrypoints=websecure"
+      - "traefik.tcp.routers.3x-ui-{{ loop.index }}.tls.passthrough=true"
+      - "traefik.tcp.routers.3x-ui-{{ loop.index }}.service=3x-ui-{{ loop.index }}"
+      - "traefik.tcp.services.3x-ui-{{ loop.index }}.loadbalancer.server.port={{ inbound.port | int }}"
+{% endfor %}
+
+networks:
+  traefik:
+    external: true
+    name: {{ traefik_docker_network }}

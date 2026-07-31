@@ -1,0 +1,39 @@
+---
+- name: Deploy Vaultwarden
+  hosts: vaultwarden_hosts
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yaml
+    - ../group_vars/vault.yaml
+  vars:
+    ansible_user: "{{ bootstrap_login_user_name }}"
+    ansible_port: "{{ ssh_hardening_port }}"
+  roles:
+    - role: vaultwarden
+
+- name: Deploy 3x-ui
+  hosts: three_x_ui_hosts
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yaml
+    - ../group_vars/vault.yaml
+  vars:
+    ansible_user: "{{ bootstrap_login_user_name }}"
+    ansible_port: "{{ ssh_hardening_port }}"
+  roles:
+    - role: three_x_ui
+
+- name: Deploy Telemt
+  hosts: telemt_hosts
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yaml
+    - ../group_vars/vault.yaml
+  vars:
+    ansible_user: "{{ bootstrap_login_user_name }}"
+    ansible_port: "{{ ssh_hardening_port }}"
+  roles:
+    - role: telemt

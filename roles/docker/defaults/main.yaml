@@ -1,0 +1,20 @@
+---
+docker_users: []
+docker_apt_architecture_map:
+  x86_64: amd64
+  aarch64: arm64
+  armv7l: armhf
+docker_apt_architecture: "{{ docker_apt_architecture_map[ansible_architecture] | default(ansible_architecture) }}"
+docker_daemon_config:
+  features:
+    buildkit: true
+  log-driver: local
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin

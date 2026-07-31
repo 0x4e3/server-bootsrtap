@@ -1,0 +1,47 @@
+---
+ssh_hardening_port: 22571
+ssh_hardening_permit_root_login: "no"
+ssh_hardening_password_authentication: "no"
+ssh_hardening_kbd_interactive_authentication: "no"
+ssh_hardening_challenge_response_authentication: "no"
+ssh_hardening_pubkey_authentication: "yes"
+ssh_hardening_use_pam: "yes"
+ssh_hardening_permit_empty_passwords: "no"
+ssh_hardening_x11_forwarding: "no"
+ssh_hardening_allow_agent_forwarding: "no"
+ssh_hardening_allow_tcp_forwarding: "no"
+ssh_hardening_client_alive_interval: 300
+ssh_hardening_client_alive_count_max: 2
+ssh_hardening_login_grace_time: 30
+ssh_hardening_max_auth_tries: 10
+ssh_hardening_max_sessions: 5
+ssh_hardening_max_startups: "10:30:60"
+ssh_hardening_strict_modes: "yes"
+ssh_hardening_ignore_rhosts: "yes"
+ssh_hardening_hostbased_authentication: "no"
+ssh_hardening_permit_user_environment: "no"
+ssh_hardening_compression: "delayed"
+ssh_hardening_print_motd: "no"
+ssh_hardening_print_lastlog: "yes"
+ssh_hardening_tcp_keep_alive: "no"
+ssh_hardening_allow_users: "{{ [bootstrap_login_user_name] if bootstrap_login_user_name is defined else ((bootstrap_users | default([])) | map(attribute='name') | list) }}"
+ssh_hardening_allow_groups: []
+ssh_hardening_deny_users: []
+ssh_hardening_deny_groups: []
+ssh_hardening_ciphers:
+  - chacha20-poly1305@openssh.com
+  - aes256-gcm@openssh.com
+  - aes128-gcm@openssh.com
+ssh_hardening_macs:
+  - hmac-sha2-512-etm@openssh.com
+  - hmac-sha2-256-etm@openssh.com
+  - umac-128-etm@openssh.com
+ssh_hardening_kex_algorithms:
+  - curve25519-sha256
+  - curve25519-sha256@libssh.org
+  - diffie-hellman-group16-sha512
+ssh_hardening_hostkey_algorithms:
+  - ssh-ed25519
+  - rsa-sha2-512
+  - rsa-sha2-256
+ssh_hardening_extra_options: {}

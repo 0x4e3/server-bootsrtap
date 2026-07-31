@@ -1,0 +1,21 @@
+---
+iptables_open_tcp_ports:
+  - "{{ ssh_hardening_port }}"
+  - 80
+  - 443
+
+traefik_acme_email: "{{ vault_traefik_acme_email }}"
+
+crowdsec_collections:
+  - crowdsecurity/sshd
+  - crowdsecurity/traefik
+crowdsec_acquisitions:
+  - name: sshd
+    path: /var/log/auth.log
+    type: syslog
+  - name: traefik
+    path: /opt/traefik/logs/access.log
+    type: traefik
+crowdsec_firewall_bouncer_iptables_chains:
+  - INPUT
+  - DOCKER-USER

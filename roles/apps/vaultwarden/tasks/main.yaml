@@ -1,0 +1,33 @@
+---
+- name: Validate Vaultwarden configuration
+  ansible.builtin.assert:
+    that:
+      - "'traefik_hosts' in group_names"
+      - "'vaultwarden_hosts' in group_names"
+      - vaultwarden_domain | length > 0
+      - vaultwarden_admin_token | length > 0
+    fail_msg: "Vaultwarden requires traefik_hosts, vaultwarden_hosts, vaultwarden_domain, and vaultwarden_admin_token."
+
+- name: Ensure Vaultwarden directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  loop:
+    - "{{ vaultwarden_root_dir }}"
+    - "{{ vaultwarden_root_dir }}/data"
+
+- name: Configure Vaultwarden Docker Compose project
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ vaultwarden_root_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Ensure Vaultwarden is running
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ vaultwarden_root_dir }}/compose.yaml up --detach"
+  changed_when: false

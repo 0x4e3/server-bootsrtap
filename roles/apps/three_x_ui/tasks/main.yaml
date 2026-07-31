@@ -1,0 +1,49 @@
+---
+- name: Validate 3x-ui configuration
+  ansible.builtin.assert:
+    that:
+      - "'traefik_hosts' in group_names"
+      - "'three_x_ui_hosts' in group_names"
+      - three_x_ui_panel_domain | length > 0
+      - three_x_ui_inbounds | length > 0
+      - three_x_ui_inbounds | map(attribute='hostname') | list | length == (three_x_ui_inbounds | map(attribute='hostname') | list | unique | length)
+      - three_x_ui_inbounds | map(attribute='port') | list | length == (three_x_ui_inbounds | map(attribute='port') | list | unique | length)
+    fail_msg: "3x-ui requires traefik_hosts, three_x_ui_hosts, a panel domain, and unique hostname and internal port for every inbound."
+
+- name: Validate 3x-ui inbound definitions
+  ansible.builtin.assert:
+    that:
+      - item.hostname is defined
+      - item.hostname | length > 0
+      - item.port is defined
+      - item.port | string is match('^[0-9]+$')
+      - item.port | int >= 1
+      - item.port | int <= 65535
+    fail_msg: "Each 3x-ui inbound requires a hostname and an internal port from 1 through 65535."
+  loop: "{{ three_x_ui_inbounds }}"
+  loop_control:
+    label: "{{ item.hostname | default('undefined-hostname') }}"
+
+- name: Ensure 3x-ui directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  loop:
+    - "{{ three_x_ui_root_dir }}"
+    - "{{ three_x_ui_root_dir }}/data"
+
+- name: Configure 3x-ui Docker Compose project
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ three_x_ui_root_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Ensure 3x-ui is running
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ three_x_ui_root_dir }}/compose.yaml up --detach"
+  changed_when: false

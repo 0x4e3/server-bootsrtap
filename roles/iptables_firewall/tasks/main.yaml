@@ -1,0 +1,72 @@
+---
+- name: Validate firewall port lists
+  ansible.builtin.assert:
+    that:
+      - iptables_open_tcp_ports is sequence
+      - iptables_open_tcp_ports is not string
+      - iptables_open_udp_ports is sequence
+      - iptables_open_udp_ports is not string
+    fail_msg: "iptables_open_tcp_ports and iptables_open_udp_ports must be lists of port numbers."
+
+- name: Validate firewall port numbers
+  ansible.builtin.assert:
+    that:
+      - item | string is match('^[0-9]+$')
+      - item | int >= 1
+      - item | int <= 65535
+    fail_msg: "Firewall ports must be integers from 1 through 65535."
+  loop: "{{ iptables_open_tcp_ports + iptables_open_udp_ports }}"
+
+- name: Disable automatic iptables rule saving during package installation
+  ansible.builtin.debconf:
+    name: iptables-persistent
+    question: "{{ item }}"
+    value: "false"
+    vtype: boolean
+  loop:
+    - iptables-persistent/autosave_v4
+    - iptables-persistent/autosave_v6
+
+- name: Ensure persistent iptables support is installed
+  ansible.builtin.apt:
+    name:
+      - iptables
+      - iptables-persistent
+    state: present
+    update_cache: true
+
+- name: Disable IPv6 persistently
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-ansible-disable-ipv6.conf
+    content: |
+      # Managed by Ansible
+      net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Disable IPv6 now
+  ansible.builtin.command: sysctl -p /etc/sysctl.d/99-ansible-disable-ipv6.conf
+  changed_when: false
+
+- name: Deploy IPv4 firewall rules
+  ansible.builtin.template:
+    src: rules.v4.j2
+    dest: /etc/iptables/rules.v4
+    owner: root
+    group: root
+    mode: "0600"
+    validate: "iptables-restore --test %s"
+  register: iptables_firewall_rules
+  notify: reload iptables rules
+
+- name: Record whether firewall rules changed
+  ansible.builtin.set_fact:
+    iptables_firewall_rules_changed: "{{ iptables_firewall_rules.changed }}"
+
+- name: Ensure persistent firewall service is enabled
+  ansible.builtin.systemd_service:
+    name: netfilter-persistent
+    enabled: true
+    state: started

@@ -1,0 +1,6 @@
+---
+traefik_image: traefik:v3.3
+traefik_container_name: traefik
+traefik_root_dir: /opt/traefik
+traefik_acme_email: ""
+traefik_docker_network: traefik

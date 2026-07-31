@@ -1,0 +1,71 @@
+---
+- name: Ensure OpenSSH server is installed
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+    update_cache: true
+
+- name: Ensure sshd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure SSH socket override directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/ssh.socket.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure SSH socket listen port
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ssh.socket.d/addresses.conf
+    content: |
+      [Socket]
+      ListenStream=
+      ListenStream={{ ssh_hardening_port }}
+    owner: root
+    group: root
+    mode: "0644"
+  notify: validate and restart ssh
+
+- name: Deploy hardened sshd_config drop-in
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config.d/00-ansible-hardening.conf
+    owner: root
+    group: root
+    mode: "0600"
+    backup: true
+    validate: "/usr/sbin/sshd -t -f %s"
+  notify: validate and restart ssh
+
+- name: Ensure SSH socket is enabled
+  ansible.builtin.systemd_service:
+    name: ssh.socket
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Flush handlers so SSH socket is restarted before continuing
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for SSH to become reachable on the configured port
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host | default(inventory_hostname) }}"
+    port: "{{ ssh_hardening_port }}"
+    timeout: 60
+    delay: 3
+  delegate_to: localhost
+  become: false
+
+- name: Use configured SSH port for subsequent tasks
+  ansible.builtin.set_fact:
+    ansible_port: "{{ ssh_hardening_port }}"
+
+- name: Reset connection after switching SSH port
+  ansible.builtin.meta: reset_connection

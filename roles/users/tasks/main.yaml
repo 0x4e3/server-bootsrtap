@@ -1,0 +1,182 @@
+---
+- name: Ensure required packages are present
+  ansible.builtin.apt:
+    name:
+      - sudo
+    state: present
+    update_cache: true
+
+- name: Resolve users role inputs
+  ansible.builtin.set_fact:
+    users_effective_accounts: "{{ bootstrap_users | default(users_accounts) }}"
+    users_effective_append_groups: "{{ bootstrap_user_append_groups | default(users_append_groups) }}"
+    users_effective_default_password: "{{ bootstrap_users_default_password | default(users_default_password) }}"
+    users_effective_default_shell: "{{ bootstrap_users_default_shell | default(users_default_shell) }}"
+    users_effective_password_marker_dir: "{{ bootstrap_users_password_marker_dir | default(users_password_marker_dir) }}"
+    users_effective_password_salt: "{{ bootstrap_users_password_salt | default(users_password_salt) }}"
+
+- name: Validate bootstrap user definitions
+  ansible.builtin.assert:
+    that:
+      - users_effective_accounts | length > 0
+      - users_effective_accounts | map(attribute='name') | list | length == (users_effective_accounts | map(attribute='name') | list | unique | length)
+    fail_msg: "bootstrap_users must contain at least one user and each user name must be unique."
+
+- name: Validate bootstrap password settings
+  ansible.builtin.assert:
+    that:
+      - users_effective_default_password | length > 0
+      - (users_effective_password_salt | regex_replace('[^A-Za-z0-9./]', '')) | length > 0
+    fail_msg: "bootstrap_users_default_password must be set and bootstrap_users_password_salt must contain at least one valid sha512_crypt salt character."
+
+- name: Validate each bootstrap user has SSH keys configured
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name | length > 0
+      - item.ssh_public_keys is defined
+      - item.ssh_public_keys | length > 0
+    fail_msg: "Each bootstrap_users entry must define name and at least one ssh_public_key."
+  loop: "{{ users_effective_accounts }}"
+  loop_control:
+    label: "{{ item.name | default('undefined-user') }}"
+  when: (item.state | default('present')) == 'present'
+
+- name: Ensure bootstrap users exist
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    home: "{{ item.home | default(omit) }}"
+    shell: "{{ item.shell | default(users_effective_default_shell) }}"
+    groups: "{{ item.groups | default([]) }}"
+    append: "{{ item.append_groups | default(users_effective_append_groups) }}"
+    create_home: "{{ item.create_home | default(true) }}"
+    password_lock: "{{ item.password_lock | default(false) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ users_effective_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: users_account_results
+
+- name: Ensure bootstrap password marker directory exists
+  ansible.builtin.file:
+    path: "{{ users_effective_password_marker_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Remove bootstrap password markers for absent users
+  ansible.builtin.file:
+    path: "{{ users_effective_password_marker_dir }}/{{ item.name }}"
+    state: absent
+  loop: "{{ users_effective_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: (item.state | default('present')) == 'absent'
+
+- name: Check whether bootstrap password was already initialized
+  ansible.builtin.stat:
+    path: "{{ users_effective_password_marker_dir }}/{{ item.name }}"
+  loop: "{{ users_effective_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: users_password_markers
+
+- name: Set initial bootstrap password for users once
+  ansible.builtin.user:
+    name: "{{ item.item.name }}"
+    password: >-
+      {{
+        users_effective_default_password | password_hash(
+          'sha512',
+          (
+            (
+              (users_effective_password_salt | regex_replace('[^A-Za-z0-9./]', ''))
+              ~
+              (item.item.name | regex_replace('[^A-Za-z0-9./]', ''))
+            )[:16]
+          )
+        )
+      }}
+    update_password: always
+  loop: "{{ users_password_markers.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - (item.item.state | default('present')) == 'present'
+    - not item.stat.exists
+
+- name: Force password change on first login
+  ansible.builtin.command: "chage -d 0 {{ item.item.name }}"
+  changed_when: true
+  loop: "{{ users_password_markers.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - (item.item.state | default('present')) == 'present'
+    - item.item.force_password_change | default(true) | bool
+    - not item.stat.exists
+
+- name: Mark bootstrap password as initialized
+  ansible.builtin.file:
+    path: "{{ users_effective_password_marker_dir }}/{{ item.item.name }}"
+    state: touch
+    owner: root
+    group: root
+    mode: "0600"
+  loop: "{{ users_password_markers.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - (item.item.state | default('present')) == 'present'
+    - not item.stat.exists
+
+- name: Ensure .ssh directory exists for bootstrap users
+  ansible.builtin.file:
+    path: "{{ item.home }}/.ssh"
+    state: directory
+    owner: "{{ item.item.name }}"
+    group: "{{ item.item.name }}"
+    mode: "0700"
+  loop: "{{ users_account_results.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: (item.item.state | default('present')) == 'present'
+
+- name: Install authorized SSH keys for bootstrap users
+  ansible.builtin.copy:
+    dest: "{{ item.home }}/.ssh/authorized_keys"
+    content: "{{ item.item.ssh_public_keys | join('\n') ~ '\n' }}"
+    owner: "{{ item.item.name }}"
+    group: "{{ item.item.name }}"
+    mode: "0600"
+  loop: "{{ users_account_results.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: (item.item.state | default('present')) == 'present'
+
+- name: Ensure passwordless sudo files are absent
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/90-{{ item.name }}"
+    state: absent
+  loop: "{{ users_effective_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: >-
+    (item.state | default('present')) == 'absent'
+    or not (item.sudo_nopasswd | default(false) | bool)
+
+- name: Ensure passwordless sudo files are present
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/90-{{ item.name }}"
+    content: "{{ item.name }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  loop: "{{ users_effective_accounts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - (item.state | default('present')) == 'present'
+    - item.sudo_nopasswd | default(false) | bool

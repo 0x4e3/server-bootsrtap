@@ -1,0 +1,17 @@
+---
+all:
+  children:
+    bootstrap:
+      hosts:
+        ubuntu-01:
+          ansible_host: 158.160.220.6
+          ansible_user: im-ad
+    traefik_hosts:
+      hosts:
+        ubuntu-01:
+    vaultwarden_hosts:
+      hosts: {}
+    three_x_ui_hosts:
+      hosts: {}
+    telemt_hosts:
+      hosts: {}

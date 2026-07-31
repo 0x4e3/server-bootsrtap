@@ -1,0 +1,132 @@
+---
+- name: Validate CrowdSec target platform
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+    fail_msg: "The crowdsec role supports Ubuntu only."
+
+- name: Ensure CrowdSec repository prerequisites are installed
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - gnupg
+      - python3-debian
+      - rsyslog
+      - cron
+    state: present
+    update_cache: true
+
+- name: Ensure CrowdSec APT keyring directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download CrowdSec APT signing key
+  ansible.builtin.get_url:
+    url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+    dest: /etc/apt/keyrings/crowdsec.asc
+    owner: root
+    group: root
+    mode: "0644"
+  register: crowdsec_apt_key
+
+- name: Check whether CrowdSec APT keyring exists
+  ansible.builtin.stat:
+    path: /etc/apt/keyrings/crowdsec.gpg
+  register: crowdsec_apt_keyring
+
+- name: Validate CrowdSec APT keyring
+  ansible.builtin.command:
+    cmd: "gpg --show-keys /etc/apt/keyrings/crowdsec.gpg"
+  register: crowdsec_apt_keyring_validation
+  changed_when: false
+  failed_when: false
+  when: crowdsec_apt_keyring.stat.exists
+
+- name: Convert CrowdSec APT signing key to a keyring
+  ansible.builtin.command:
+    cmd: "gpg --dearmor --yes --output /etc/apt/keyrings/crowdsec.gpg /etc/apt/keyrings/crowdsec.asc"
+  changed_when: true
+  when: >-
+    crowdsec_apt_key.changed
+    or not crowdsec_apt_keyring.stat.exists
+    or crowdsec_apt_keyring_validation.rc | default(1) != 0
+
+- name: Configure CrowdSec APT repository
+  ansible.builtin.deb822_repository:
+    name: crowdsec
+    types: deb
+    uris: https://packagecloud.io/crowdsec/crowdsec/any/
+    suites: any
+    components: main
+    signed_by: /etc/apt/keyrings/crowdsec.gpg
+    state: present
+
+- name: Prefer CrowdSec packages from the official repository
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/crowdsec
+    content: |
+      Package: *
+      Pin: release o=packagecloud.io/crowdsec/crowdsec,a=any,n=any,c=main
+      Pin-Priority: 1001
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install CrowdSec and firewall bouncer
+  ansible.builtin.apt:
+    name:
+      - crowdsec
+      - crowdsec-firewall-bouncer-iptables
+    state: present
+    update_cache: true
+
+- name: Ensure rsyslog, cron, and CrowdSec services are enabled and started
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - rsyslog
+    - cron
+    - crowdsec
+    - crowdsec-firewall-bouncer
+
+- name: Configure CrowdSec log acquisitions
+  ansible.builtin.template:
+    src: acquisition.yaml.j2
+    dest: "/etc/crowdsec/acquis.d/{{ item.name }}.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ crowdsec_acquisitions }}"
+  notify: restart crowdsec
+
+- name: Install CrowdSec collections
+  ansible.builtin.command:
+    cmd: "cscli collections install {{ item }}"
+  loop: "{{ crowdsec_collections }}"
+  register: crowdsec_collection_installation
+  changed_when: "'already installed' not in crowdsec_collection_installation.stdout"
+  notify: restart crowdsec
+
+- name: Configure firewall bouncer iptables chains
+  ansible.builtin.lineinfile:
+    path: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+    regexp: "^#?\\s*- {{ item }}$"
+    line: "  - {{ item }}"
+    insertafter: "^iptables_chains:$"
+  loop: "{{ crowdsec_firewall_bouncer_iptables_chains }}"
+  notify: restart crowdsec firewall bouncer
+
+- name: Schedule CrowdSec Hub updates
+  ansible.builtin.cron:
+    name: Update CrowdSec Hub content
+    user: root
+    minute: "{{ crowdsec_hub_update_minute }}"
+    hour: "{{ crowdsec_hub_update_hour }}"
+    job: "(cscli hub update && cscli hub upgrade) >/var/log/crowdsec-hub-update.log 2>&1"
+    state: "{{ 'present' if crowdsec_hub_update_enabled | bool else 'absent' }}"

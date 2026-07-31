@@ -1,0 +1,9 @@
+---
+system_tools_packages:
+  - mtr
+  - traceroute
+  - iperf3
+  - nmap
+  - iftop
+  - iotop
+  - btop

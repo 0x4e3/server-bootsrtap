@@ -1,0 +1,12 @@
+---
+crowdsec_collections:
+  - crowdsecurity/sshd
+crowdsec_acquisitions:
+  - name: sshd
+    path: /var/log/auth.log
+    type: syslog
+crowdsec_firewall_bouncer_iptables_chains:
+  - INPUT
+crowdsec_hub_update_enabled: true
+crowdsec_hub_update_minute: "23"
+crowdsec_hub_update_hour: "4"

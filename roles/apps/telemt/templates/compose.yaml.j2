@@ -1,0 +1,27 @@
+services:
+  telegram-proxy:
+    image: {{ telemt_image }}
+    container_name: {{ telemt_container_name }}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - "{{ telemt_root_dir }}/config/telemt.toml:/etc/telemt.toml:ro"
+    networks:
+      - traefik
+    expose:
+      - "{{ telemt_listen_port | int }}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ traefik_docker_network }}"
+      - "traefik.tcp.services.telemt.loadbalancer.server.port={{ telemt_listen_port | int }}"
+      - "traefik.tcp.routers.telemt.entrypoints={{ telemt_traefik_entrypoint }}"
+      - "traefik.tcp.routers.telemt.rule=HostSNI(`{{ telemt_sni_hostname }}`)"
+      - "traefik.tcp.routers.telemt.tls=true"
+      - "traefik.tcp.routers.telemt.tls.passthrough=true"
+      - "traefik.tcp.routers.telemt.service=telemt"
+
+networks:
+  traefik:
+    external: true
+    name: {{ traefik_docker_network }}

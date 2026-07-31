@@ -1,0 +1,8 @@
+---
+telemt_image: whn0thacked/telemt-docker:3.3.39
+telemt_container_name: telegram-proxy
+telemt_root_dir: /opt/telemt
+telemt_config: ""
+telemt_listen_port: 1234
+telemt_sni_hostname: ""
+telemt_traefik_entrypoint: websecure

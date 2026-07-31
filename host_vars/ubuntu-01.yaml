@@ -1,0 +1,3 @@
+---
+# Example per-host override
+# ssh_hardening_port: 2223

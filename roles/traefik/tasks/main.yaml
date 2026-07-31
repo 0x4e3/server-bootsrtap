@@ -1,0 +1,42 @@
+---
+- name: Validate Traefik ACME configuration
+  ansible.builtin.assert:
+    that:
+      - "'traefik_hosts' in group_names"
+      - traefik_acme_email | length > 0
+    fail_msg: "Traefik hosts must belong to traefik_hosts and set traefik_acme_email from Ansible Vault."
+
+- name: Ensure Traefik directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ traefik_root_dir }}"
+    - "{{ traefik_root_dir }}/letsencrypt"
+    - "{{ traefik_root_dir }}/logs"
+
+- name: Ensure Traefik ACME storage exists
+  ansible.builtin.file:
+    path: "{{ traefik_root_dir }}/letsencrypt/acme.json"
+    state: touch
+    owner: root
+    group: root
+    mode: "0600"
+    access_time: preserve
+    modification_time: preserve
+
+- name: Configure Traefik Docker Compose project
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ traefik_root_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Ensure Traefik is running
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ traefik_root_dir }}/compose.yaml up --detach"
+  changed_when: false

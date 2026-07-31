@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+vault_file="group_vars/vault.yaml"
+vault_backup=""
+use_vault_password=false
+
+cleanup() {
+  rm -f "$vault_file"
+
+  if [[ -n "$vault_backup" ]]; then
+    mv "$vault_backup" "$vault_file"
+  fi
+}
+
+if [[ -f "$vault_file" && -r "${ANSIBLE_VAULT_PASSWORD_FILE:-.vault_password}" ]]; then
+  vault_password_file="${ANSIBLE_VAULT_PASSWORD_FILE:-.vault_password}"
+  use_vault_password=true
+else
+  if [[ -f "$vault_file" ]]; then
+    vault_backup="$(mktemp "${vault_file}.XXXXXX")"
+    rm "$vault_backup"
+    mv "$vault_file" "$vault_backup"
+  fi
+
+  trap cleanup EXIT
+  umask 077
+  printf '%s\n' '--- {}' > "$vault_file"
+fi
+
+for playbook in playbooks/bootstrap.yaml playbooks/setup.yaml playbooks/apps.yaml; do
+  if [[ "$use_vault_password" == true ]]; then
+    ansible-playbook --syntax-check --vault-password-file "$vault_password_file" "$playbook"
+  else
+    ansible-playbook --syntax-check "$playbook"
+  fi
+done

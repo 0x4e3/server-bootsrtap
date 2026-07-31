@@ -1,0 +1,7 @@
+---
+vaultwarden_image: vaultwarden/server:latest
+vaultwarden_container_name: vaultwarden
+vaultwarden_root_dir: /opt/vaultwarden
+vaultwarden_domain: ""
+vaultwarden_admin_token: ""
+vaultwarden_signups_allowed: false

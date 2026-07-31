@@ -1,0 +1,18 @@
+---
+exclude: ^group_vars/vault\.ya?ml$
+
+repos:
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+
+  - repo: local
+    hooks:
+      - id: ansible-syntax
+        name: Ansible syntax check
+        entry: uv run bash scripts/check-ansible-syntax
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(ansible\.cfg|inventories/|group_vars/|host_vars/|playbooks/|roles/)

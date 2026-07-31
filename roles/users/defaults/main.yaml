@@ -1,0 +1,7 @@
+---
+users_default_shell: /bin/bash
+users_accounts: []
+users_append_groups: true
+users_default_password: ""
+users_password_salt: ""
+users_password_marker_dir: /var/lib/ansible/bootstrap-users

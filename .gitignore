@@ -1,0 +1,16 @@
+# Ansible Vault secrets
+group_vars/vault.yaml
+group_vars/vault.yml
+.vault_password
+.vault_password_file
+
+# Ansible runtime artifacts
+*.retry
+
+# Python tooling artifacts
+.venv/
+__pycache__/
+*.py[cod]
+
+# agents stuff
+.codex/

@@ -1,0 +1,25 @@
+services:
+  vaultwarden:
+    image: {{ vaultwarden_image }}
+    container_name: {{ vaultwarden_container_name }}
+    restart: unless-stopped
+    environment:
+      DOMAIN: {{ ('https://' ~ vaultwarden_domain) | to_json }}
+      ADMIN_TOKEN: {{ vaultwarden_admin_token | to_json }}
+      SIGNUPS_ALLOWED: {{ vaultwarden_signups_allowed | string | lower | to_json }}
+      WEBSOCKET_ENABLED: "true"
+    volumes:
+      - "{{ vaultwarden_root_dir }}/data:/data"
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.rule=Host(`{{ vaultwarden_domain }}`)"
+      - "traefik.http.routers.vaultwarden.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+
+networks:
+  traefik:
+    external: true
+    name: {{ traefik_docker_network }}

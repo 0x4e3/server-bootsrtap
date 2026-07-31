@@ -1,0 +1,2 @@
+---
+# Traefik is reconciled by docker compose on every setup run.
