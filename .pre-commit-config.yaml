@@ -22,3 +22,10 @@ repos:
         pass_filenames: false
         files: >-
           ^(ansible\.cfg|inventories/|group_vars/|host_vars/|playbooks/|roles/)
+      - id: bootstrap-integration
+        name: Bootstrap integration test
+        entry: just test-bootstrap
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(Justfile|ansible\.cfg|inventories/|group_vars/|host_vars/|playbooks/|pyproject\.toml|roles/|tests/bootstrap/|uv\.lock)

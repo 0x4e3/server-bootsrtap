@@ -413,34 +413,12 @@ telemt_config: "{{ vault_telemt_config }}"
 
 Store the full Telemt TOML, including proxy secrets, in `vault_telemt_config` in `group_vars/vault.yaml`. Its `[server] port` must match `telemt_listen_port`, and `[censorship] tls_domain` must match `telemt_sni_hostname`.
 
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, checks, and Bootstrap
+test instructions.
+
 ## Usage
-
-## Development Checks
-
-Install the repository-local tooling and Git hook:
-
-```bash
-uv sync --group dev
-uv run pre-commit install
-uv run pre-commit install --hook-type commit-msg
-```
-
-The Git hook requires Conventional Commit subjects, such as `feat(traefik): add secured dashboard`.
-
-When `ANSIBLE_VAULT_PASSWORD_FILE` or `.vault_password` is available, the Ansible check uses the real Vault. Otherwise, it temporarily substitutes an empty Vault file to validate playbook structure without secrets. Run all checks manually with:
-
-```bash
-uv run pre-commit run --all-files
-```
-
-Or run the same checks with:
-
-```bash
-just check
-```
-
-Use `just check-worktree` to run the same YAML and Ansible checks across the working tree, including untracked files.
-Running `just` without a recipe does the same.
 
 Run the one-time bootstrap from the initial SSH port:
 
