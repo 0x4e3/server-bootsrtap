@@ -6,6 +6,15 @@
       - traefik_acme_email | length > 0
     fail_msg: "Traefik hosts must belong to traefik_hosts and set traefik_acme_email from Ansible Vault."
 
+- name: Validate Traefik dashboard configuration
+  ansible.builtin.assert:
+    that:
+      - traefik_dashboard_host | length > 0
+      - traefik_dashboard_username | length > 0
+      - traefik_dashboard_password | length > 0
+    fail_msg: "An enabled Traefik dashboard requires traefik_dashboard_host, traefik_dashboard_username, and traefik_dashboard_password."
+  when: traefik_dashboard_enabled | bool
+
 - name: Ensure Traefik directories exist
   ansible.builtin.file:
     path: "{{ item }}"

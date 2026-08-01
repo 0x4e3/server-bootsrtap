@@ -238,8 +238,12 @@ Input variables:
 - `traefik_acme_email`
 - `traefik_image`
 - `traefik_docker_network`
+- `traefik_dashboard_enabled`
+- `traefik_dashboard_host`
+- `traefik_dashboard_username`
+- `traefik_dashboard_password`
 
-Application containers must join the `traefik` network and set explicit `traefik.enable=true` labels. The dashboard is disabled.
+Application containers must join the `traefik` network and set explicit `traefik.enable=true` labels. The dashboard is disabled by default. To expose it over HTTPS, set `traefik_dashboard_enabled: true`, its hostname and username in `group_vars/traefik_hosts.yaml`, and `vault_traefik_dashboard_password` in `group_vars/vault.yaml`. It is protected with HTTP basic authentication.
 
 ### `vaultwarden`
 
@@ -377,6 +381,7 @@ vault_bootstrap_login_user_ssh_public_keys:
 vault_bootstrap_users_default_password: "use-a-strong-random-password"
 vault_bootstrap_users_password_salt: "use-a-random-sha512-crypt-salt"
 vault_traefik_acme_email: "ops@example.com"
+vault_traefik_dashboard_password: "use-a-strong-random-password"
 vault_vaultwarden_admin_token: "a-long-random-admin-token"
 ```
 
