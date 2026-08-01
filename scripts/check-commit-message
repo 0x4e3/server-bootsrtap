@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+message_file="${1:?Expected path to commit message file}"
+IFS= read -r subject < "$message_file" || true
+
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9][a-z0-9._/-]*\))?!?: .+$'
+
+if [[ ! "$subject" =~ $pattern ]]; then
+  printf '%s\n' "Commit subject must follow Conventional Commits, for example: feat(traefik): add secured dashboard" >&2
+  exit 1
+fi

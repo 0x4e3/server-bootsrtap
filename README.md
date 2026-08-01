@@ -422,7 +422,10 @@ Install the repository-local tooling and Git hook:
 ```bash
 uv sync --group dev
 uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
 ```
+
+The Git hook requires Conventional Commit subjects, such as `feat(traefik): add secured dashboard`.
 
 When `ANSIBLE_VAULT_PASSWORD_FILE` or `.vault_password` is available, the Ansible check uses the real Vault. Otherwise, it temporarily substitutes an empty Vault file to validate playbook structure without secrets. Run all checks manually with:
 
