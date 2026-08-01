@@ -23,9 +23,16 @@ repos:
         files: >-
           ^(ansible\.cfg|inventories/|group_vars/|host_vars/|playbooks/|roles/)
       - id: bootstrap-integration
-        name: Bootstrap integration test
-        entry: just test-bootstrap
+        name: Bootstrap lightweight test
+        entry: just test-bootstrap-lightweight
         language: system
         pass_filenames: false
         files: >-
           ^(Justfile|ansible\.cfg|inventories/|group_vars/|host_vars/|playbooks/|pyproject\.toml|roles/|tests/bootstrap/|uv\.lock)
+      - id: setup-lightweight
+        name: Setup lightweight test
+        entry: just test-setup-lightweight
+        language: system
+        pass_filenames: false
+        files: >-
+          ^(Justfile|group_vars/all\.yaml|roles/(docker|iptables_firewall|ssh_hardening|traefik)/|tests/setup/(lightweight\.sh|render\.yaml))

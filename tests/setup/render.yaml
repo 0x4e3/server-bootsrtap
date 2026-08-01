@@ -1,0 +1,47 @@
+---
+- name: Render setup configuration fixtures
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/all.yaml
+  vars:
+    docker_daemon_config:
+      features:
+        buildkit: true
+      log-driver: local
+    ssh_hardening_allow_users:
+      - bootstrap-test
+    traefik_acme_email: setup-test@example.invalid
+    traefik_container_name: traefik
+    traefik_dashboard_enabled: false
+    traefik_dashboard_host: ""
+    traefik_dashboard_password: ""
+    traefik_dashboard_username: ""
+    traefik_docker_network: traefik
+    traefik_image: traefik:v3.3
+    traefik_root_dir: /opt/traefik
+  tasks:
+    - name: Render hardened SSH configuration
+      ansible.builtin.template:
+        src: ../../roles/ssh_hardening/templates/sshd_config.j2
+        dest: "{{ output_dir }}/sshd_config"
+        mode: "0600"
+
+    - name: Render firewall rules
+      ansible.builtin.template:
+        src: ../../roles/iptables_firewall/templates/rules.v4.j2
+        dest: "{{ output_dir }}/rules.v4"
+        mode: "0600"
+
+    - name: Render Docker daemon configuration
+      ansible.builtin.template:
+        src: ../../roles/docker/templates/daemon.json.j2
+        dest: "{{ output_dir }}/daemon.json"
+        mode: "0600"
+
+    - name: Render Traefik Compose configuration
+      ansible.builtin.template:
+        src: ../../roles/traefik/templates/compose.yaml.j2
+        dest: "{{ output_dir }}/traefik-compose.yaml"
+        mode: "0600"

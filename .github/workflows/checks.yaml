@@ -21,7 +21,7 @@ jobs:
       - run: uv run yamllint .
       - run: uv run bash scripts/check-ansible-syntax
 
-  tests:
+  test-bootstrap-lightweight:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,4 +30,15 @@ jobs:
           python-version-file: .python-version
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --group dev --frozen
-      - run: bash tests/bootstrap/run.sh
+      - run: bash tests/bootstrap/lightweight.sh
+
+  test-setup-lightweight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --group dev --frozen
+      - run: bash tests/setup/lightweight.sh

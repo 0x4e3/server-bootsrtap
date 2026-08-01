@@ -48,7 +48,7 @@ configuration or Bootstrap test files change.
 Run the Docker integration test:
 
 ```bash
-just test-bootstrap
+just test-bootstrap-lightweight
 ```
 
 It provisions a disposable Ubuntu 24.04 SSH container, runs `bootstrap.yaml`
@@ -60,7 +60,7 @@ Run the full local VM test on macOS:
 
 ```bash
 brew install lima
-just test-bootstrap-vm
+just test-bootstrap-heavy
 ```
 
 The VM test creates a disposable Ubuntu 24.04 VM, runs package updates and a
@@ -69,10 +69,19 @@ runs the playbook again for idempotence, then deletes the VM.
 
 ## Setup Test
 
+Run the lightweight Docker validation:
+
+```bash
+just test-setup-lightweight
+```
+
+It renders the SSH, iptables, Docker, and Traefik templates with fixture values,
+then validates their syntax in Docker. This runs in pre-commit and CI.
+
 Run the full local Setup test on macOS:
 
 ```bash
-just test-setup-vm
+just test-setup-heavy
 ```
 
 It creates a disposable Ubuntu 24.04 VM with a pre-created Bootstrap user,
