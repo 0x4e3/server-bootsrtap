@@ -18,3 +18,9 @@ test-setup-lightweight:
 
 test-setup-heavy:
     bash tests/setup/heavy.sh
+
+test-lightweight: test-bootstrap-lightweight test-setup-lightweight
+
+test-heavy: test-bootstrap-heavy test-setup-heavy
+
+test: test-lightweight test-heavy
