@@ -27,6 +27,7 @@
     group: root
     mode: "0600"
   register: telemt_config_file
+  no_log: true
 
 - name: Configure Telemt Docker Compose project
   ansible.builtin.template:
@@ -36,6 +37,7 @@
     group: root
     mode: "0600"
   register: telemt_compose_file
+  no_log: true
 
 - name: Ensure Telemt is running
   ansible.builtin.command:

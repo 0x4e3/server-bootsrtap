@@ -44,6 +44,7 @@
     owner: root
     group: root
     mode: "0644"
+  no_log: true
 
 - name: Ensure Traefik is running
   ansible.builtin.command:
