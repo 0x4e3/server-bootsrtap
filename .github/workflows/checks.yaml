@@ -30,4 +30,4 @@ jobs:
           python-version-file: .python-version
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --group dev --frozen
-      - run: just test-bootstrap
+      - run: bash tests/bootstrap/run.sh
