@@ -49,4 +49,8 @@
 - name: Ensure Traefik is running
   ansible.builtin.command:
     cmd: "docker compose -f {{ traefik_root_dir }}/compose.yaml up --detach"
+  register: traefik_compose
+  until: traefik_compose is succeeded
+  retries: 3
+  delay: 5
   changed_when: false

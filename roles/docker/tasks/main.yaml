@@ -29,6 +29,10 @@
     owner: root
     group: root
     mode: "0644"
+  register: docker_apt_key
+  until: docker_apt_key is succeeded
+  retries: 3
+  delay: 2
 
 - name: Configure Docker APT repository
   ansible.builtin.deb822_repository:
@@ -40,6 +44,12 @@
     architectures: "{{ docker_apt_architecture }}"
     signed_by: /etc/apt/keyrings/docker.asc
     state: present
+  register: docker_apt_repository
+
+- name: Update apt cache after Docker repository changes
+  ansible.builtin.command: apt-get update
+  changed_when: false
+  when: docker_apt_repository.changed
 
 - name: Install Docker Engine, Buildx, and Compose
   ansible.builtin.apt:

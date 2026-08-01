@@ -66,3 +66,15 @@ just test-bootstrap-vm
 The VM test creates a disposable Ubuntu 24.04 VM, runs package updates and a
 real reboot, verifies SSH access and passwordless sudo for the Bootstrap user,
 runs the playbook again for idempotence, then deletes the VM.
+
+## Setup Test
+
+Run the full local Setup test on macOS:
+
+```bash
+just test-setup-vm
+```
+
+It creates a disposable Ubuntu 24.04 VM with a pre-created Bootstrap user,
+tests the SSH port transition, firewall rules, system tools, Docker, Traefik,
+and CrowdSec, then runs `setup.yaml` again to verify idempotence.

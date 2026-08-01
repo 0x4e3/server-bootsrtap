@@ -32,6 +32,9 @@
     group: root
     mode: "0644"
   register: crowdsec_apt_key
+  until: crowdsec_apt_key is succeeded
+  retries: 3
+  delay: 2
 
 - name: Check whether CrowdSec APT keyring exists
   ansible.builtin.stat:
@@ -64,6 +67,12 @@
     components: main
     signed_by: /etc/apt/keyrings/crowdsec.gpg
     state: present
+  register: crowdsec_apt_repository
+
+- name: Update apt cache after CrowdSec repository changes
+  ansible.builtin.command: apt-get update
+  changed_when: false
+  when: crowdsec_apt_repository.changed
 
 - name: Prefer CrowdSec packages from the official repository
   ansible.builtin.copy:
@@ -83,6 +92,10 @@
       - crowdsec-firewall-bouncer-iptables
     state: present
     update_cache: true
+  register: crowdsec_package_installation
+  until: crowdsec_package_installation is succeeded
+  retries: 3
+  delay: 5
 
 - name: Ensure rsyslog, cron, and CrowdSec services are enabled and started
   ansible.builtin.systemd_service:
@@ -105,12 +118,20 @@
   loop: "{{ crowdsec_acquisitions }}"
   notify: restart crowdsec
 
-- name: Install CrowdSec collections
+- name: Check installed CrowdSec collections
   ansible.builtin.command:
-    cmd: "cscli collections install {{ item }}"
+    cmd: "cscli collections inspect {{ item }}"
   loop: "{{ crowdsec_collections }}"
-  register: crowdsec_collection_installation
-  changed_when: "'already installed' not in crowdsec_collection_installation.stdout"
+  register: crowdsec_collection_inspection
+  changed_when: false
+  failed_when: false
+
+- name: Install missing CrowdSec collections
+  ansible.builtin.command:
+    cmd: "cscli collections install {{ item.item }}"
+  loop: "{{ crowdsec_collection_inspection.results }}"
+  when: item.rc != 0
+  changed_when: true
   notify: restart crowdsec
 
 - name: Configure firewall bouncer iptables chains

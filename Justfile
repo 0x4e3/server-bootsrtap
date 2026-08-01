@@ -12,3 +12,6 @@ test-bootstrap:
 
 test-bootstrap-vm:
     bash tests/bootstrap/lima.sh
+
+test-setup-vm:
+    bash tests/setup/lima.sh

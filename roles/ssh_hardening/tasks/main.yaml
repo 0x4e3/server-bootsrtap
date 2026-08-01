@@ -27,7 +27,7 @@
     content: |
       [Socket]
       ListenStream=
-      ListenStream={{ ssh_hardening_port }}
+      ListenStream=0.0.0.0:{{ ssh_hardening_port }}
     owner: root
     group: root
     mode: "0644"
@@ -54,18 +54,14 @@
 - name: Flush handlers so SSH socket is restarted before continuing
   ansible.builtin.meta: flush_handlers
 
-- name: Wait for SSH to become reachable on the configured port
-  ansible.builtin.wait_for:
-    host: "{{ ansible_host | default(inventory_hostname) }}"
-    port: "{{ ssh_hardening_port }}"
-    timeout: 60
-    delay: 3
-  delegate_to: localhost
-  become: false
-
 - name: Use configured SSH port for subsequent tasks
   ansible.builtin.set_fact:
     ansible_port: "{{ ssh_hardening_port }}"
 
 - name: Reset connection after switching SSH port
   ansible.builtin.meta: reset_connection
+
+- name: Wait for SSH authentication on the configured port
+  ansible.builtin.wait_for_connection:
+    timeout: 60
+    delay: 3
