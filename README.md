@@ -1,6 +1,21 @@
 # Server Bootstrap
 
+[![CI](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml/badge.svg)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+
 Production-oriented Ansible project for bootstrapping Ubuntu 24.04 servers from a fresh install.
+
+## Contents
+
+- [What It Does](#what-it-does)
+- [Project Layout](#project-layout)
+- [Host Groups](#host-groups)
+- [Roles](#roles)
+- [Inventory Example](#inventory-example)
+- [Variable Example](#variable-example)
+- [Development](#development)
+- [Usage](#usage)
+- [Semaphore Notes](#semaphore-notes)
+- [Operational Notes](#operational-notes)
 
 ## What It Does
 
