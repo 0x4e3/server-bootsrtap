@@ -2,7 +2,7 @@
 - name: Validate CrowdSec target platform
   ansible.builtin.assert:
     that:
-      - ansible_distribution == 'Ubuntu'
+      - ansible_facts['distribution'] == 'Ubuntu'
     fail_msg: "The crowdsec role supports Ubuntu only."
 
 - name: Ensure CrowdSec repository prerequisites are installed
@@ -92,21 +92,20 @@
       - crowdsec-firewall-bouncer-iptables
     state: present
     update_cache: true
+    policy_rc_d: 101
   register: crowdsec_package_installation
   until: crowdsec_package_installation is succeeded
   retries: 3
   delay: 5
 
-- name: Ensure rsyslog, cron, and CrowdSec services are enabled and started
-  ansible.builtin.systemd_service:
-    name: "{{ item }}"
-    enabled: true
-    state: started
+- name: Remove CrowdSec setup-generated log acquisitions
+  ansible.builtin.file:
+    path: "/etc/crowdsec/acquis.d/{{ item }}"
+    state: absent
   loop:
-    - rsyslog
-    - cron
-    - crowdsec
-    - crowdsec-firewall-bouncer
+    - setup.linux.yaml
+    - setup.sshd.yaml
+  notify: restart crowdsec
 
 - name: Configure CrowdSec log acquisitions
   ansible.builtin.template:
@@ -118,19 +117,21 @@
   loop: "{{ crowdsec_acquisitions }}"
   notify: restart crowdsec
 
-- name: Check installed CrowdSec collections
+- name: List installed CrowdSec collections
   ansible.builtin.command:
-    cmd: "cscli collections inspect {{ item }}"
-  loop: "{{ crowdsec_collections }}"
-  register: crowdsec_collection_inspection
+    cmd: cscli collections list -o json
+  register: crowdsec_collection_list
   changed_when: false
-  failed_when: false
+
+- name: Record installed CrowdSec collections
+  ansible.builtin.set_fact:
+    crowdsec_installed_collections: "{{ (crowdsec_collection_list.stdout | from_json).collections | map(attribute='name') | list }}"
 
 - name: Install missing CrowdSec collections
   ansible.builtin.command:
-    cmd: "cscli collections install {{ item.item }}"
-  loop: "{{ crowdsec_collection_inspection.results }}"
-  when: item.rc != 0
+    cmd: "cscli collections install {{ item }}"
+  loop: "{{ crowdsec_collections }}"
+  when: item not in crowdsec_installed_collections
   changed_when: true
   notify: restart crowdsec
 
@@ -142,6 +143,17 @@
     insertafter: "^iptables_chains:$"
   loop: "{{ crowdsec_firewall_bouncer_iptables_chains }}"
   notify: restart crowdsec firewall bouncer
+
+- name: Ensure rsyslog, cron, and CrowdSec services are enabled and started
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - rsyslog
+    - cron
+    - crowdsec
+    - crowdsec-firewall-bouncer
 
 - name: Schedule CrowdSec Hub updates
   ansible.builtin.cron:
