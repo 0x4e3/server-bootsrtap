@@ -4,7 +4,6 @@
   become: true
   gather_facts: true
   vars_files:
-    - ../group_vars/all.yaml
     - ../group_vars/vault.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"
@@ -17,7 +16,6 @@
   become: true
   gather_facts: true
   vars_files:
-    - ../group_vars/all.yaml
     - ../group_vars/vault.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"
@@ -30,7 +28,6 @@
   become: true
   gather_facts: true
   vars_files:
-    - ../group_vars/all.yaml
     - ../group_vars/vault.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"

@@ -4,7 +4,6 @@
   become: true
   gather_facts: true
   vars_files:
-    - ../group_vars/all.yaml
     - ../group_vars/vault.yaml
 
   roles:
@@ -24,7 +23,6 @@
   become: true
   gather_facts: true
   vars_files:
-    - ../group_vars/all.yaml
     - ../group_vars/vault.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"
@@ -44,6 +42,7 @@
         upgrade: dist
         autoremove: true
         autoclean: true
+        policy_rc_d: 101
       when: bootstrap_manage_updates | bool
 
     - name: Reboot after system upgrade
