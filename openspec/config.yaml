@@ -1,0 +1,48 @@
+---
+schema: spec-driven
+
+context: |
+  Language: English
+  All artifacts must be written in English.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+  Main specs describe the current desired state. The GitHub Wiki contains
+  operator runbooks, step-by-step commands, and troubleshooting.
+  A change proposal is required when an update affects network exposure, SSH
+  access, secrets, persistent data, public services, or migration order.
+
+rules:
+  specs:
+    - Describe externally observable behavior and safety invariants, not Ansible task implementation.
+    - Include a verification scenario for every requirement.
+  proposal:
+    - State affected network ports, secrets, persistent paths, and rollback constraints when applicable.
+
+operations:
+  apply:
+    guidance:
+      - Validate changed playbooks and run the narrowest relevant test before broader checks.
+  archive:
+    guidance:
+      - Update the GitHub Wiki when an operator workflow or recovery procedure changes.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
