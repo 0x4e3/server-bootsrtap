@@ -1,6 +1,12 @@
 # Server Bootstrap
 
-[![CI](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml/badge.svg)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![CI Ubuntu 22.04](https://img.shields.io/github/actions/workflow/status/0x4e3/server-bootsrtap/checks.yaml?label=CI%20Ubuntu%2022.04)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![CI Ubuntu 24.04](https://img.shields.io/github/actions/workflow/status/0x4e3/server-bootsrtap/checks.yaml?label=CI%20Ubuntu%2024.04)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![CI Ubuntu 26.04](https://img.shields.io/github/actions/workflow/status/0x4e3/server-bootsrtap/checks.yaml?label=CI%20Ubuntu%2026.04)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![Lint](https://github.com/0x4e3/server-bootsrtap/actions/workflows/lint.yaml/badge.svg)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/lint.yaml)
+[![Ansible Core](https://img.shields.io/badge/ansible--core-2.19%2B-EE0000?logo=ansible&logoColor=white)](https://docs.ansible.com/ansible/latest/)
+[![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-4C1)](LICENSE)
 
 Production-oriented Ansible project for bootstrapping Ubuntu 24.04 servers from a fresh install.
 
