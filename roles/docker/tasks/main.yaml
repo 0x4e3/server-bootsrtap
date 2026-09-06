@@ -2,7 +2,7 @@
 - name: Validate Docker target platform
   ansible.builtin.assert:
     that:
-      - ansible_distribution == 'Ubuntu'
+      - ansible_facts['distribution'] == 'Ubuntu'
     fail_msg: "The docker role supports Ubuntu only."
 
 - name: Ensure Docker repository prerequisites are installed
@@ -39,7 +39,7 @@
     name: docker
     types: deb
     uris: https://download.docker.com/linux/ubuntu
-    suites: "{{ ansible_distribution_release }}"
+    suites: "{{ ansible_facts['distribution_release'] }}"
     components: stable
     architectures: "{{ docker_apt_architecture }}"
     signed_by: /etc/apt/keyrings/docker.asc
@@ -56,6 +56,7 @@
     name: "{{ docker_packages }}"
     state: present
     update_cache: true
+    policy_rc_d: 101
 
 - name: Ensure Docker daemon configuration directory exists
   ansible.builtin.file:

@@ -2,7 +2,7 @@
 # Connection/bootstrap behavior
 bootstrap_reboot_timeout: 1800
 bootstrap_manage_updates: true
-ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -o ServerAliveCountMax=4"
 
 # User management
 bootstrap_users_default_shell: /bin/bash
