@@ -64,6 +64,7 @@ ssh_hardening_extra_options: {}
 
 # Setup connection behavior
 setup_ssh_port: "{{ ssh_hardening_port }}"
+ssh_hardening_current_port: "{{ setup_ssh_port }}"
 
 # IPv4 firewall
 iptables_open_tcp_ports:

@@ -149,6 +149,7 @@ Purpose:
 Input variables:
 
 - `ssh_hardening_port`
+- `ssh_hardening_current_port`
 - `ssh_hardening_permit_root_login`
 - `ssh_hardening_password_authentication`
 - `ssh_hardening_max_auth_tries`
@@ -516,6 +517,7 @@ ansible-playbook \
 - The first bootstrap play uses the inventory connection user only to create `bootstrap_login_user_name`; package updates and reboot run after reconnecting as that user.
 - `bootstrap_login_user_force_password_change` defaults to `false` so bootstrap can reconnect non-interactively with the vault-managed SSH key.
 - The first `playbooks/setup.yaml` run must use `setup_ssh_port` set to the current SSH port. SSH hardening then resets the connection and uses `ssh_hardening_port` for the remaining setup roles.
+- When the controller reaches a host through NAT, set `ssh_hardening_current_port` to the port exposed on the host itself so the firewall can preserve it during an SSH port migration.
 - Subsequent `playbooks/setup.yaml` runs default `setup_ssh_port` to `ssh_hardening_port`.
 - Add every service host to `traefik_hosts`, then add it to the relevant `vaultwarden_hosts`, `three_x_ui_hosts`, or `telemt_hosts` groups.
 - The bootstrap playbook reboots the server when `bootstrap_manage_updates` is `true`.
