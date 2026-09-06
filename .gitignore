@@ -6,6 +6,7 @@ group_vars/vault.yml
 
 # Ansible runtime artifacts
 *.retry
+.test-yc-vm-id
 
 # Python tooling artifacts
 .venv/
