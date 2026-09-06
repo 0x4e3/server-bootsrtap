@@ -1,8 +1,8 @@
 # Server Bootstrap
 
-[![CI Ubuntu 22.04](https://img.shields.io/github/actions/workflow/status/0x4e3/server-bootsrtap/checks.yaml?label=CI%20Ubuntu%2022.04)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
-[![CI Ubuntu 24.04](https://img.shields.io/github/actions/workflow/status/0x4e3/server-bootsrtap/checks.yaml?label=CI%20Ubuntu%2024.04)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
-[![CI Ubuntu 26.04](https://img.shields.io/github/actions/workflow/status/0x4e3/server-bootsrtap/checks.yaml?label=CI%20Ubuntu%2026.04)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![CI matrix Ubuntu 22.04](https://img.shields.io/badge/CI%20matrix-Ubuntu%2022.04-555?logo=ubuntu&logoColor=white)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![CI matrix Ubuntu 24.04](https://img.shields.io/badge/CI%20matrix-Ubuntu%2024.04-555?logo=ubuntu&logoColor=white)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
+[![CI matrix Ubuntu 26.04](https://img.shields.io/badge/CI%20matrix-Ubuntu%2026.04-555?logo=ubuntu&logoColor=white)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/checks.yaml)
 [![Lint](https://github.com/0x4e3/server-bootsrtap/actions/workflows/lint.yaml/badge.svg)](https://github.com/0x4e3/server-bootsrtap/actions/workflows/lint.yaml)
 [![Ansible Core](https://img.shields.io/badge/ansible--core-2.19%2B-EE0000?logo=ansible&logoColor=white)](https://docs.ansible.com/ansible/latest/)
 [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
