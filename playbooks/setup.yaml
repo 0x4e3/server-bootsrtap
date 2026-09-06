@@ -9,6 +9,23 @@
     ansible_user: "{{ bootstrap_login_user_name }}"
     ansible_port: "{{ setup_ssh_port }}"
 
+  pre_tasks:
+    - name: Keep the current SSH port open during port migration
+      ansible.builtin.set_fact:
+        setup_firewall_tcp_ports: "{{ (iptables_open_tcp_ports | map('string') | list + [ssh_hardening_current_port | string]) | unique }}"
+      when: ssh_hardening_current_port | int != ssh_hardening_port | int
+
+    - name: Apply temporary firewall rules for SSH port migration
+      ansible.builtin.include_role:
+        name: iptables_firewall
+      vars:
+        iptables_open_tcp_ports: "{{ setup_firewall_tcp_ports }}"
+      when: ssh_hardening_current_port | int != ssh_hardening_port | int
+
+    - name: Activate temporary firewall rules before switching SSH ports
+      ansible.builtin.meta: flush_handlers
+      when: ssh_hardening_current_port | int != ssh_hardening_port | int
+
   roles:
     - role: ssh_hardening
     - role: iptables_firewall
