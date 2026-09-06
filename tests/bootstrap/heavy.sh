@@ -52,7 +52,7 @@ vault_bootstrap_users_default_password: "bootstrap-test-password"
 vault_bootstrap_users_password_salt: "bootstrap-test-salt"
 EOF
 
-cat > "$work_dir/inventory.yaml" <<EOF
+cat > "$test_repo/inventory.yaml" <<EOF
 ---
 all:
   children:
@@ -63,13 +63,14 @@ all:
           ansible_port: $ssh_port
           ansible_user: $initial_user
           ansible_ssh_private_key_file: $test_key
+          ansible_ssh_common_args: "-o UserKnownHostsFile=$work_dir/known_hosts -o StrictHostKeyChecking=accept-new"
 EOF
 
 export HOME="$work_dir/home"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="$control_path_dir"
 mkdir "$HOME"
 
-ansible_playbook=("$repo_root/.venv/bin/ansible-playbook" -i "$work_dir/inventory.yaml" playbooks/bootstrap.yaml)
+ansible_playbook=("$repo_root/.venv/bin/ansible-playbook" -i "$test_repo/inventory.yaml" playbooks/bootstrap.yaml)
 (
     cd "$test_repo"
     "${ansible_playbook[@]}" \

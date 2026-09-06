@@ -60,7 +60,7 @@ vault_traefik_acme_email: "bootstrap-test@example.invalid"
 vault_traefik_dashboard_password: "bootstrap-test-password"
 EOF
 
-cat > "$work_dir/inventory.yaml" <<EOF
+cat > "$test_repo/inventory.yaml" <<EOF
 ---
 all:
   children:
@@ -77,7 +77,7 @@ export HOME="$work_dir/home"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="$control_path_dir"
 mkdir "$HOME"
 
-ansible_playbook=("$repo_root/.venv/bin/ansible-playbook" -i "$work_dir/inventory.yaml" playbooks/setup.yaml)
+ansible_playbook=("$repo_root/.venv/bin/ansible-playbook" -i "$test_repo/inventory.yaml" playbooks/setup.yaml)
 ansible_ssh_options="{\"ansible_ssh_common_args\":\"-oUserKnownHostsFile=$work_dir/known_hosts -oStrictHostKeyChecking=accept-new\"}"
 (
     cd "$test_repo"

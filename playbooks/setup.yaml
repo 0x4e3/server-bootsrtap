@@ -3,8 +3,6 @@
   hosts: all
   become: true
   gather_facts: true
-  vars_files:
-    - ../group_vars/all.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"
     ansible_port: "{{ setup_ssh_port }}"
@@ -36,7 +34,6 @@
   become: true
   gather_facts: true
   vars_files:
-    - ../group_vars/all.yaml
     - ../group_vars/vault.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"
@@ -49,8 +46,6 @@
   hosts: all
   become: true
   gather_facts: true
-  vars_files:
-    - ../group_vars/all.yaml
   vars:
     ansible_user: "{{ bootstrap_login_user_name }}"
     ansible_port: "{{ ssh_hardening_port }}"

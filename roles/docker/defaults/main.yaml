@@ -4,7 +4,7 @@ docker_apt_architecture_map:
   x86_64: amd64
   aarch64: arm64
   armv7l: armhf
-docker_apt_architecture: "{{ docker_apt_architecture_map[ansible_architecture] | default(ansible_architecture) }}"
+docker_apt_architecture: "{{ docker_apt_architecture_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
 docker_daemon_config:
   features:
     buildkit: true
