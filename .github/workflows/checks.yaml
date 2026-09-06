@@ -7,9 +7,44 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      openspec: ${{ steps.filter.outputs.openspec }}
+      tests: ${{ steps.filter.outputs.tests }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          predicate-quantifier: every
+          filters: |
+            openspec:
+              - 'openspec/**'
+            tests:
+              - '**'
+              - '!openspec/**'
+
+  openspec-validate:
+    needs: changes
+    if: needs.changes.outputs.openspec == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global @fission-ai/openspec@1.10.0
+      - run: openspec validate --all --strict
+
   test-bootstrap-lightweight:
+    needs: changes
+    if: needs.changes.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +68,8 @@ jobs:
       - run: bash tests/bootstrap/lightweight.sh
 
   test-setup-lightweight:
+    needs: changes
+    if: needs.changes.outputs.tests == 'true'
     strategy:
       fail-fast: false
       matrix:

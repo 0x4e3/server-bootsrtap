@@ -22,6 +22,12 @@ repos:
         pass_filenames: false
         files: >-
           ^(ansible\.cfg|inventories/|group_vars/|host_vars/|playbooks/|roles/)
+      - id: openspec-validate
+        name: OpenSpec validation
+        entry: openspec validate --all --strict
+        language: system
+        pass_filenames: false
+        files: ^openspec/
       - id: bootstrap-integration
         name: Bootstrap lightweight test
         entry: just test-bootstrap-lightweight
