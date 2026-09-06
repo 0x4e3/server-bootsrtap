@@ -20,5 +20,5 @@ docker compose -f "$output_dir/traefik-compose.yaml" config --quiet
 docker run --rm \
     --cap-add NET_ADMIN \
     --volume "$output_dir:/fixtures:ro" \
-    ubuntu:24.04 \
+    "ubuntu:${TEST_UBUNTU_VERSION:-24.04}" \
     sh -euc 'apt-get update >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends iptables openssh-server >/dev/null && mkdir --parents /run/sshd && sshd -t -f /fixtures/sshd_config && iptables-restore --test /fixtures/rules.v4'

@@ -19,6 +19,7 @@ test_key="$work_dir/bootstrap-test-key"
 ssh-keygen -q -t ed25519 -N "" -f "$test_key"
 
 docker build \
+    --build-arg "UBUNTU_VERSION=${TEST_UBUNTU_VERSION:-24.04}" \
     --tag server-bootstrap-test:latest \
     "$repo_root/tests/bootstrap"
 container_id="$(docker run \
