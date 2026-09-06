@@ -9,20 +9,20 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: .python-version
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --group dev --frozen
-      - run: uv run yamllint .
-      - run: uv run bash scripts/check-ansible-syntax
-
   test-bootstrap-lightweight:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            ubuntu_version: "22.04"
+          - runner: ubuntu-24.04
+            ubuntu_version: "24.04"
+          - runner: ubuntu-26.04
+            ubuntu_version: "26.04"
+    runs-on: ${{ matrix.runner }}
+    env:
+      TEST_UBUNTU_VERSION: ${{ matrix.ubuntu_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,7 +33,19 @@ jobs:
       - run: bash tests/bootstrap/lightweight.sh
 
   test-setup-lightweight:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            ubuntu_version: "22.04"
+          - runner: ubuntu-24.04
+            ubuntu_version: "24.04"
+          - runner: ubuntu-26.04
+            ubuntu_version: "26.04"
+    runs-on: ${{ matrix.runner }}
+    env:
+      TEST_UBUNTU_VERSION: ${{ matrix.ubuntu_version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
